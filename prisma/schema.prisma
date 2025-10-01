@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  company   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  clients   Client[]
+  leads     Lead[]
+  integrations Integration[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  name        String
+  website     String
+  apiKey      String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  visitors    Visitor[]
+  leads       Lead[]
+  integrations Integration[]
+  notifications Notification[]
+
+  @@map("clients")
+}
+
+model Visitor {
+  id          String   @id @default(cuid())
+  ipAddress   String
+  userAgent   String?
+  referrer    String?
+  pageUrl     String
+  sessionId   String
+  timestamp   DateTime @default(now())
+  clientId    String
+  isEnriched  Boolean  @default(false)
+
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  leads       Lead[]
+
+  @@map("visitors")
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  email       String?
+  firstName   String?
+  lastName    String?
+  company     String?
+  title       String?
+  phone       String?
+  linkedinUrl String?
+  facebookUrl String?
+  instagramUrl String?
+  twitterUrl  String?
+  website     String?
+  location    String?
+  industry    String?
+  companySize String?
+  revenue     String?
+  description String?
+  score       Int      @default(0)
+  status      LeadStatus @default(NEW)
+  source      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  clientId    String
+  visitorId   String?
+  userId      String
+
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  visitor     Visitor? @relation(fields: [visitorId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrichments EnrichmentData[]
+
+  @@map("leads")
+}
+
+model EnrichmentData {
+  id          String   @id @default(cuid())
+  provider    String   // clearbit, apollo, hunter, etc.
+  data        Json     // Raw enrichment data
+  confidence  Float?   // Confidence score 0-1
+  createdAt   DateTime @default(now())
+  leadId      String
+
+  // Relations
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("enrichment_data")
+}
+
+model Integration {
+  id          String   @id @default(cuid())
+  type        IntegrationType
+  name        String
+  config      Json     // Integration-specific configuration
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  clientId    String
+  userId      String
+
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("integrations")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String
+  data        Json?
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  clientId    String
+  userId      String
+
+  // Relations
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  LOST
+}
+
+enum IntegrationType {
+  CRM
+  EMAIL_MARKETING
+  SLACK
+  WEBHOOK
+  SALESFORCE
+  HUBSPOT
+  PIPEDRIVE
+}
+
+enum NotificationType {
+  NEW_LEAD
+  ENRICHMENT_COMPLETE
+  INTEGRATION_ERROR
+  SYSTEM_ALERT
+}
