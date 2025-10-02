@@ -59,8 +59,8 @@ async function bootstrap(): Promise<void> {
   const port = process.env.PORT || 3001;
   await app.listen(port);
 
-  console.log(`✅ Backend running on http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`✅ Backend running on https://api.blurleads.com`);
+  console.log(`📚 API Documentation: https://api.blurleads.com/api/docs`);
 }
 
 bootstrap().catch((error) => {

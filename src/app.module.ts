@@ -10,6 +10,7 @@ import { EnrichmentModule } from './enrichment/enrichment.module';
 import { NotificationModule } from './notification/notification.module';
 import { LeadsModule } from './leads/leads.module';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
     NotificationModule,
     LeadsModule,
     IntegrationsModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

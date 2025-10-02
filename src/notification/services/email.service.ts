@@ -14,9 +14,25 @@ export class EmailService {
     this.fromEmail =
       this.configService.get<string>('FROM_EMAIL') || 'noreply@blurleads.com';
 
-    // Configure SendGrid if API key is provided
-    if (this.sendGridApiKey) {
-      sgMail.setApiKey(this.sendGridApiKey);
+    // Configure SendGrid if API key is provided and valid
+    if (this.sendGridApiKey && this.sendGridApiKey.startsWith('SG.')) {
+      try {
+        sgMail.setApiKey(this.sendGridApiKey);
+        console.log('✅ SendGrid configured successfully');
+      } catch (error) {
+        console.warn(
+          '⚠️ SendGrid API key invalid, falling back to SMTP:',
+          error.message
+        );
+        this.sendGridApiKey = null; // Disable SendGrid
+      }
+    } else if (this.sendGridApiKey) {
+      console.warn(
+        '⚠️ SendGrid API key format invalid (should start with "SG."), falling back to SMTP'
+      );
+      this.sendGridApiKey = null; // Disable SendGrid
+    } else {
+      console.log('ℹ️ No SendGrid API key provided, using SMTP fallback');
     }
 
     // Fallback to SMTP if SendGrid is not configured
@@ -44,7 +60,15 @@ export class EmailService {
       const html = this.generateLeadEmailTemplate(lead);
 
       if (this.sendGridApiKey) {
-        await this.sendWithSendGrid(user.email, subject, html);
+        try {
+          await this.sendWithSendGrid(user.email, subject, html);
+        } catch (error) {
+          console.warn(
+            '⚠️ SendGrid failed, falling back to SMTP:',
+            error.message
+          );
+          await this.sendWithSMTP(user.email, subject, html);
+        }
       } else {
         await this.sendWithSMTP(user.email, subject, html);
       }
@@ -65,7 +89,15 @@ export class EmailService {
       const html = this.generateEnrichmentEmailTemplate(visitor);
 
       if (this.sendGridApiKey) {
-        await this.sendWithSendGrid(user.email, subject, html);
+        try {
+          await this.sendWithSendGrid(user.email, subject, html);
+        } catch (error) {
+          console.warn(
+            '⚠️ SendGrid failed, falling back to SMTP:',
+            error.message
+          );
+          await this.sendWithSMTP(user.email, subject, html);
+        }
       } else {
         await this.sendWithSMTP(user.email, subject, html);
       }
@@ -81,6 +113,10 @@ export class EmailService {
     subject: string,
     html: string
   ): Promise<void> {
+    if (!this.sendGridApiKey) {
+      throw new Error('SendGrid not configured');
+    }
+
     const msg = {
       to,
       from: this.fromEmail,
