@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bull';
 import { TrackingService } from './tracking.service';
 import { TrackingController } from './tracking.controller';
 import { EnrichmentModule } from '../enrichment/enrichment.module';
+import { ClientsModule } from '../clients/clients.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { EnrichmentModule } from '../enrichment/enrichment.module';
       name: 'enrichment',
     }),
     EnrichmentModule,
+    ClientsModule,
   ],
   providers: [TrackingService],
   controllers: [TrackingController],

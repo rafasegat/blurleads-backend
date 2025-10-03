@@ -1,12 +1,14 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { SupabaseService } from '../common/supabase/supabase.service';
+import { ClientsService } from '../clients/clients.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly supabaseService: SupabaseService
+    private readonly supabaseService: SupabaseService,
+    private readonly clientsService: ClientsService
   ) {}
 
   async register(registerData: {
@@ -51,6 +53,17 @@ export class AuthService {
     });
 
     console.log('✅ User registered successfully:', userProfile.email);
+
+    // Auto-create client for new user
+    try {
+      await this.clientsService.createClient(userProfile.id, {
+        name: `${userProfile.name || userProfile.email.split('@')[0]}'s Website`,
+      });
+      console.log('✅ Client auto-created for new user:', userProfile.id);
+    } catch (error) {
+      console.error('⚠️ Failed to auto-create client:', error);
+      // Don't fail registration if client creation fails
+    }
 
     return { user: userProfile, session };
   }

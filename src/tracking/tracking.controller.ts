@@ -14,7 +14,7 @@ import {
   ApiHeader,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 import { TrackingService } from './tracking.service';
 import { Prisma } from '@prisma/client';
 
@@ -37,6 +37,15 @@ export class TrackingController {
       userAgent?: string;
       sessionId: string;
       ipAddress?: string;
+      contactInfo?: {
+        emails: string[];
+        phones: string[];
+        socialProfiles: Array<{
+          platform: string;
+          url: string;
+          username: string | null;
+        }>;
+      };
     }
   ) {
     console.log('📊 Tracking event received');
@@ -44,7 +53,7 @@ export class TrackingController {
   }
 
   @Get('stats')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get tracking statistics for authenticated client' })
   @ApiResponse({

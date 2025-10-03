@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { ClientsService } from '../clients/clients.service';
 
 interface TrackingEvent {
   pageUrl: string;
@@ -9,12 +10,22 @@ interface TrackingEvent {
   userAgent?: string;
   sessionId: string;
   ipAddress?: string;
+  contactInfo?: {
+    emails: string[];
+    phones: string[];
+    socialProfiles: Array<{
+      platform: string;
+      url: string;
+      username: string | null;
+    }>;
+  };
 }
 
 @Injectable()
 export class TrackingService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly clientsService: ClientsService,
     @InjectQueue('enrichment') private readonly enrichmentQueue: Queue
   ) {}
 
@@ -24,19 +35,8 @@ export class TrackingService {
   ): Promise<any> {
     console.log('📊 Processing tracking event for API key:', apiKey);
 
-    // Find client by API key
-    const client = await this.prisma.client.findUnique({
-      where: { apiKey },
-      include: { user: true },
-    });
-
-    if (!client) {
-      throw new NotFoundException('Invalid API key');
-    }
-
-    if (!client.isActive) {
-      throw new NotFoundException('Client account is inactive');
-    }
+    // Find client by API key using ClientsService
+    const client = await this.clientsService.getClientByApiKey(apiKey);
 
     // Create visitor record
     const visitor = await this.prisma.visitor.create({
@@ -47,6 +47,9 @@ export class TrackingService {
         pageUrl: trackingData.pageUrl,
         sessionId: trackingData.sessionId,
         clientId: client.id,
+        contactInfo: trackingData.contactInfo
+          ? JSON.stringify(trackingData.contactInfo)
+          : null,
       },
     });
 
@@ -73,17 +76,7 @@ export class TrackingService {
 
   async getClientByApiKey(apiKey: string): Promise<any> {
     console.log('🔍 Looking up client by API key');
-
-    const client = await this.prisma.client.findUnique({
-      where: { apiKey },
-      include: { user: true },
-    });
-
-    if (!client) {
-      throw new NotFoundException('Invalid API key');
-    }
-
-    return client;
+    return this.clientsService.getClientByApiKey(apiKey);
   }
 
   async getTrackingStats(clientId: string): Promise<any> {

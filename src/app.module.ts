@@ -5,12 +5,14 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { SupabaseModule } from './common/supabase/supabase.module';
 import { AuthModule } from './auth/auth.module';
+import { ClientsModule } from './clients/clients.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { EnrichmentModule } from './enrichment/enrichment.module';
 import { NotificationModule } from './notification/notification.module';
 import { LeadsModule } from './leads/leads.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { HealthModule } from './health/health.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -34,12 +36,14 @@ import { HealthModule } from './health/health.module';
     PrismaModule,
     SupabaseModule,
     AuthModule,
+    ClientsModule,
     TrackingModule,
     EnrichmentModule,
     NotificationModule,
     LeadsModule,
     IntegrationsModule,
     HealthModule,
+    UserModule,
   ],
 })
 export class AppModule {}

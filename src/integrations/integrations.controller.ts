@@ -14,13 +14,13 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 import { IntegrationsService } from './integrations.service';
 import { Prisma, IntegrationType } from '@prisma/client';
 
 @ApiTags('Integrations')
 @Controller('integrations')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SupabaseAuthGuard)
 @ApiBearerAuth()
 export class IntegrationsController {
   constructor(private readonly integrationsService: IntegrationsService) {}

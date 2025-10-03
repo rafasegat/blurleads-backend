@@ -27,6 +27,7 @@ model User {
   @@map("users")
 }
 
+
 model Client {
   id          String   @id @default(cuid())
   name        String
@@ -57,6 +58,7 @@ model Visitor {
   timestamp   DateTime @default(now())
   clientId    String
   isEnriched  Boolean  @default(false)
+  contactInfo String?  // JSON string containing emails, phones, social profiles
 
   // Relations
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
