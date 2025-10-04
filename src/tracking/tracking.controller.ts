@@ -6,7 +6,11 @@ import {
   Query,
   Headers,
   UseGuards,
+  Header,
+  Options,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -24,6 +28,9 @@ export class TrackingController {
   constructor(private readonly trackingService: TrackingService) {}
 
   @Post('event')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  @Header('Access-Control-Allow-Headers', 'Content-Type, x-api-key')
   @ApiOperation({ summary: 'Record a visitor tracking event' })
   @ApiHeader({ name: 'x-api-key', description: 'Client API key' })
   @ApiResponse({ status: 201, description: 'Event recorded successfully' })
@@ -50,6 +57,15 @@ export class TrackingController {
   ) {
     console.log('📊 Tracking event received');
     return this.trackingService.createTrackingEvent(apiKey, trackingData);
+  }
+
+  @Options('event')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  @Header('Access-Control-Allow-Headers', 'Content-Type, x-api-key')
+  @Header('Access-Control-Max-Age', '86400')
+  handleOptions(@Res() res: Response) {
+    res.status(200).end();
   }
 
   @Get('stats')

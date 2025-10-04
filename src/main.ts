@@ -17,8 +17,10 @@ async function bootstrap(): Promise<void> {
   app.use(compression());
   app.use(
     cors({
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: true, // Allow requests from any origin for tracking script
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
     })
   );
 
