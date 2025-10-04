@@ -203,9 +203,9 @@ export class ClientsService {
       throw new NotFoundException('Invalid API key');
     }
 
-    if (!client.isActive) {
-      throw new NotFoundException('Client account is inactive');
-    }
+    // if (!client.isActive) {
+    //   throw new NotFoundException('Client account is inactive');
+    // }
 
     return client;
   }
