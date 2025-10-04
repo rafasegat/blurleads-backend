@@ -50,7 +50,7 @@ model Client {
 
 model Visitor {
   id          String   @id @default(cuid())
-  ipAddress   String
+  ipAddress   String?  // Made optional since frontend can't always provide IP
   userAgent   String?
   referrer    String?
   pageUrl     String
