@@ -66,7 +66,7 @@ export class ClientsService {
         name: clientName,
         website: data.website || '',
         apiKey,
-        isActive: true,
+        isActive: false,
       },
       include: {
         user: {
