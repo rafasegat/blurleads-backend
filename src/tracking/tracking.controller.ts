@@ -9,8 +9,10 @@ import {
   Header,
   Options,
   Res,
+  Req,
+  Ip,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -20,7 +22,6 @@ import {
 } from '@nestjs/swagger';
 import { SupabaseAuthGuard } from '../auth/guards/supabase-auth.guard';
 import { TrackingService } from './tracking.service';
-import { Prisma } from '@prisma/client';
 
 @ApiTags('Tracking')
 @Controller('tracking')
@@ -37,26 +38,31 @@ export class TrackingController {
   @ApiResponse({ status: 404, description: 'Invalid API key' })
   async createTrackingEvent(
     @Headers('x-api-key') apiKey: string,
+    @Req() request: Request,
+    @Ip() clientIp: string,
     @Body()
     trackingData: {
       pageUrl: string;
       referrer?: string;
       userAgent?: string;
       sessionId: string;
-      ipAddress?: string;
-      contactInfo?: {
-        emails: string[];
-        phones: string[];
-        socialProfiles: Array<{
-          platform: string;
-          url: string;
-          username: string | null;
-        }>;
-      };
     }
   ) {
     console.log('📊 Tracking event received');
-    return this.trackingService.createTrackingEvent(apiKey, trackingData);
+
+    // Extract IP address from request (handles proxies and load balancers)
+    const ipAddress =
+      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+      (request.headers['x-real-ip'] as string) ||
+      clientIp ||
+      request.socket.remoteAddress;
+
+    console.log('🌐 Visitor IP address:', ipAddress);
+
+    return this.trackingService.createTrackingEvent(apiKey, {
+      ...trackingData,
+      ipAddress,
+    });
   }
 
   @Options('event')

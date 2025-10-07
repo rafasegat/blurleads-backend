@@ -5,6 +5,7 @@ import { EnrichmentProcessor } from './enrichment.processor';
 import { ClearbitService } from './services/clearbit.service';
 import { ApolloService } from './services/apollo.service';
 import { HunterService } from './services/hunter.service';
+import { CompanyEnrichmentService } from './services/company-enrichment.service';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { HunterService } from './services/hunter.service';
     ClearbitService,
     ApolloService,
     HunterService,
+    CompanyEnrichmentService,
   ],
-  exports: [EnrichmentService],
+  exports: [EnrichmentService, CompanyEnrichmentService],
 })
 export class EnrichmentModule {}
