@@ -70,18 +70,22 @@ export class CompanyEnrichmentService {
 
       // Try enrich.so first (primary service)
       let companyData = await this.tryEnrichSo(ipAddress);
+      console.log('🔍 Enrich.so found company: ', companyData);
 
       if (!companyData) {
         // Fallback to other services
         companyData = await this.tryIPData(ipAddress);
+        console.log('🔍 IPData.co found company: ', companyData);
       }
 
       if (!companyData) {
         companyData = await this.tryIPAPI(ipAddress);
+        console.log('🔍 IP-API.com found company: ', companyData);
       }
 
       if (!companyData) {
         companyData = await this.tryIPInfo(ipAddress);
+        console.log('🔍 IPInfo.io found company: ', companyData);
       }
 
       if (companyData) {

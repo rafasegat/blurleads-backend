@@ -34,9 +34,62 @@ CREATE TABLE "clients" (
 );
 
 -- CreateTable
+CREATE TABLE "companies" (
+    "id" TEXT NOT NULL,
+    "domain" TEXT,
+    "name" TEXT,
+    "industry" TEXT,
+    "size" TEXT,
+    "location" TEXT,
+    "country" TEXT,
+    "city" TEXT,
+    "revenue" TEXT,
+    "linkedin" TEXT,
+    "twitter" TEXT,
+    "facebook" TEXT,
+    "description" TEXT,
+    "logo" TEXT,
+    "employees" INTEGER,
+    "founded" TEXT,
+    "technologies" TEXT,
+    "ipRanges" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "alexaGlobalRank" INTEGER,
+    "countryCode" TEXT,
+    "crunchbase" TEXT,
+    "domainAliases" TEXT,
+    "duns" TEXT,
+    "ein" TEXT,
+    "emailAddresses" TEXT,
+    "foundedYear" INTEGER,
+    "industryGroup" TEXT,
+    "lat" DOUBLE PRECISION,
+    "legalName" TEXT,
+    "lng" DOUBLE PRECISION,
+    "parent" TEXT,
+    "phoneNumbers" TEXT,
+    "postalCode" TEXT,
+    "raised" BIGINT,
+    "sector" TEXT,
+    "state" TEXT,
+    "stateCode" TEXT,
+    "streetAddress" TEXT,
+    "subIndustry" TEXT,
+    "tags" TEXT,
+    "timeZone" TEXT,
+    "trafficRank" TEXT,
+    "type" TEXT,
+    "ultimateParent" TEXT,
+    "utcOffset" INTEGER,
+
+    CONSTRAINT "companies_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "visitors" (
     "id" TEXT NOT NULL,
-    "ipAddress" TEXT NOT NULL,
+    "ipAddress" TEXT,
     "userAgent" TEXT,
     "referrer" TEXT,
     "pageUrl" TEXT NOT NULL,
@@ -44,6 +97,7 @@ CREATE TABLE "visitors" (
     "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "clientId" TEXT NOT NULL,
     "isEnriched" BOOLEAN NOT NULL DEFAULT false,
+    "companyId" TEXT,
 
     CONSTRAINT "visitors_pkey" PRIMARY KEY ("id")
 );
@@ -75,6 +129,7 @@ CREATE TABLE "leads" (
     "clientId" TEXT NOT NULL,
     "visitorId" TEXT,
     "userId" TEXT NOT NULL,
+    "companyId" TEXT,
 
     CONSTRAINT "leads_pkey" PRIMARY KEY ("id")
 );
@@ -127,6 +182,9 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "clients_apiKey_key" ON "clients"("apiKey");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "companies_domain_key" ON "companies"("domain");
+
 -- AddForeignKey
 ALTER TABLE "clients" ADD CONSTRAINT "clients_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -134,13 +192,19 @@ ALTER TABLE "clients" ADD CONSTRAINT "clients_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "visitors" ADD CONSTRAINT "visitors_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "clients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "visitors" ADD CONSTRAINT "visitors_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "companies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "leads" ADD CONSTRAINT "leads_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "clients"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "leads" ADD CONSTRAINT "leads_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "visitors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "leads" ADD CONSTRAINT "leads_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "companies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "leads" ADD CONSTRAINT "leads_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "leads" ADD CONSTRAINT "leads_visitorId_fkey" FOREIGN KEY ("visitorId") REFERENCES "visitors"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "enrichment_data" ADD CONSTRAINT "enrichment_data_leadId_fkey" FOREIGN KEY ("leadId") REFERENCES "leads"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -156,3 +220,4 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_clientId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
